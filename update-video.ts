@@ -13,7 +13,7 @@ function getNewTitle(views: number, likes: number) {
 
 async function updateVideoTitle() {
 	try {
-		console.info("Searching for video with ID:", VIDEO_ID)
+		console.info(`Searching for video with ID ${VIDEO_ID} ...`)
 
 		// // https://developers.google.com/youtube/v3/docs/videos/list
 		const response = await youtube.videos.list({
@@ -32,16 +32,16 @@ async function updateVideoTitle() {
 		const views = Number(video.statistics?.viewCount)
 		const likes = Number(video.statistics?.likeCount)
 
-		console.info("Found the video:", oldTitle)
+		console.info(`Found the video with title "${oldTitle}".`)
 
 		const newTitle = getNewTitle(views, likes)
 
 		if (oldTitle === newTitle) {
-			console.info("Video already up to date.")
+			console.info("Video title already up to date.")
 			return
 		}
 
-		console.info("Updating video...")
+		console.info(`Updating video title to "${newTitle}" ...`)
 
 		// https://developers.google.com/youtube/v3/docs/videos/update
 		await youtube.videos.update({
@@ -58,7 +58,7 @@ async function updateVideoTitle() {
 			},
 		})
 
-		console.info("Video updated successfully.")
+		console.info("Video title updated successfully.")
 	} catch (error) {
 		console.error("Error updating video:", error)
 	}
