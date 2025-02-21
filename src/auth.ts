@@ -21,12 +21,14 @@ const authUrl = oAuth2Client.generateAuthUrl({
 	scope: SCOPES,
 })
 
-console.info("Authorize this app by visiting:", authUrl)
+console.info("Authorize this app by visiting:")
+console.info(authUrl)
 
-rl.question("Enter the code from that page: ", (code) => {
+rl.question("Enter the code from that page: ", async (code) => {
 	oAuth2Client.getToken(code, (err, token) => {
 		if (err) {
 			console.error("Error retrieving access token", err)
+			rl.close()
 			return
 		}
 		console.info("Token has been generated successfully.")
