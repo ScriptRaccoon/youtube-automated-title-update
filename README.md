@@ -44,13 +44,13 @@ Below you find detailed instructions how to apply this process to your YouTube v
 
 ## Retrieve the refresh token
 
-1. Inside the repository, run the script `pnpm auth`. This script will only be needed once.
-2. Open the URL that is displayed.
-3. Login with the account that manages your YouTube account. In case you are having a brand account, you need to choose the brand account.
-4. After login, you will be redirected to an URL of the form `http://localhost:3000/callback?code=...&scopes=...`. Ignore that nothing is shown here. Only copy the `code` parameter in the URL. If necessary, decode HTML characters (e.g. `%2F` is a slash)
-5. Paste the code to the terminal that is running the script.
-6. An object will be logged which contains, in particular, the refresh token.
-7. Copy the refresh token to the `.env` file. It should now be complete.
+1. Inside the repository, run the script `pnpm auth`.
+2. Open `http://localhost:3000` and follow the link.
+3. Login with the account that manages your YouTube account. In case you have a brand account, you need to choose the brand account.
+4. After login, you will be redirected to `http://localhost:3000/callback` and see a refresh token and access token. In case you already generated a refresh token which has not expired, it will not be included in the response.
+5. Copy the refresh token to the `.env` file. The file should now be complete.
+
+Repeat this step in case your refresh token has expired.
 
 ## Test the update script locally
 

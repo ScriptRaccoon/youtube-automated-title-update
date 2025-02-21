@@ -1,18 +1,18 @@
 /**
- * This script generates an access token and a refresh token for the YouTube API.
+ * Use this script to generate the access and refresh token for the YouTube API.
  */
-
+import express from "express"
 import { google } from "googleapis"
-import readline from "readline"
-
 import { CLIENT_ID, CLIENT_SECRET, REDIRECT_URI } from "./env"
 
-const SCOPES = ["https://www.googleapis.com/auth/youtube"]
+const app = express()
+const PORT = 3000
 
-const rl = readline.createInterface({
-	input: process.stdin,
-	output: process.stdout,
+app.listen(PORT, () => {
+	console.info(`Server is running on http://localhost:${PORT}`)
 })
+
+const SCOPES = ["https://www.googleapis.com/auth/youtube"]
 
 const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
@@ -21,18 +21,28 @@ const authUrl = oAuth2Client.generateAuthUrl({
 	scope: SCOPES,
 })
 
-console.info("Authorize this app by visiting:")
-console.info(authUrl)
+app.use(express.json())
 
-rl.question("Enter the code from that page: ", async (code) => {
+app.get("/", (_, res) => {
+	res.send(
+		`<p style="font-size:1.25rem; font-family: system-ui, sans-serif;">
+			Use the following link to retrieve the access and refresh token:
+			<br>
+			<a style="color: blue; font-weight: bold" href="${authUrl}">${authUrl}</a>
+		</p>`
+	)
+})
+
+app.get("/callback", (req, res) => {
+	const code = req.query.code as string
 	oAuth2Client.getToken(code, (err, token) => {
 		if (err) {
 			console.error("Error retrieving access token", err)
-			rl.close()
+			res.status(500).send("Error retrieving access token")
 			return
 		}
 		console.info("Token has been generated successfully.")
 		console.info(token)
-		rl.close()
+		res.status(200).json(token)
 	})
 })
