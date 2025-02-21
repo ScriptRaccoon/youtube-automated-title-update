@@ -3,8 +3,8 @@
 	"version": "1.0.0",
 	"description": "",
 	"scripts": {
-		"update:video": "tsx update-video.ts",
-		"auth": "tsx auth.ts"
+		"update:video": "tsx src/update-video.ts",
+		"auth": "tsx src/auth.ts"
 	},
 	"author": "Script Raccoon",
 	"license": "MIT",
