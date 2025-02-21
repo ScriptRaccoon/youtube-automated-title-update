@@ -1,13 +1,5 @@
-import { google, youtube_v3 } from "googleapis"
-
-import { CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, REFRESH_TOKEN, VIDEO_ID } from "./env"
-
-const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
-oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN })
-
-const youtube = google.youtube({ version: "v3", auth: oAuth2Client })
-
-type Video = youtube_v3.Schema$Video
+import { VIDEO_ID } from "./env"
+import { youtube, type YouTubeVideo } from "./client"
 
 updateVideoTitle()
 
@@ -36,7 +28,7 @@ async function updateVideoTitle() {
 	}
 }
 
-async function fetchVideoDetails(videoId: string): Promise<Video> {
+async function fetchVideoDetails(videoId: string): Promise<YouTubeVideo> {
 	// https://developers.google.com/youtube/v3/docs/videos/list
 	const response = await youtube.videos.list({
 		part: ["snippet", "statistics"],
@@ -55,7 +47,7 @@ async function fetchVideoDetails(videoId: string): Promise<Video> {
 	return video
 }
 
-async function updateTitle(video: Video, newTitle: string) {
+async function updateTitle(video: YouTubeVideo, newTitle: string) {
 	const { categoryId, description, defaultAudioLanguage, defaultLanguage } = video.snippet!
 
 	// https://developers.google.com/youtube/v3/docs/videos/update
@@ -74,11 +66,11 @@ async function updateTitle(video: Video, newTitle: string) {
 	})
 }
 
-function getTitle(video: Video) {
+function getTitle(video: YouTubeVideo) {
 	return video.snippet?.title
 }
 
-function getStats(video: Video) {
+function getStats(video: YouTubeVideo) {
 	return {
 		views: Number(video.statistics?.viewCount),
 		likes: Number(video.statistics?.likeCount),
