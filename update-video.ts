@@ -1,4 +1,4 @@
-import { google } from "googleapis"
+import { google, youtube_v3 } from "googleapis"
 
 import { CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, REFRESH_TOKEN, VIDEO_ID } from "./env"
 
@@ -7,56 +7,28 @@ oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN })
 
 const youtube = google.youtube({ version: "v3", auth: oAuth2Client })
 
-function getNewTitle(views: number, likes: number) {
-	return `Dieses Video wurde ${views} mal gesehen und hat ${likes} Likes!`
-}
+type Video = youtube_v3.Schema$Video
+
+updateVideoTitle()
 
 async function updateVideoTitle() {
 	try {
 		console.info(`Searching for video with ID ${VIDEO_ID} ...`)
+		const video = await fetchVideoDetails(VIDEO_ID)
 
-		// // https://developers.google.com/youtube/v3/docs/videos/list
-		const response = await youtube.videos.list({
-			part: ["snippet", "statistics"],
-			id: [VIDEO_ID],
-		})
-
-		if (!response.data.items || response.data.items.length === 0) {
-			console.error("Video not found.")
-			return
-		}
-
-		const video = response.data.items[0]
-
-		const oldTitle = video.snippet?.title
-		const views = Number(video.statistics?.viewCount)
-		const likes = Number(video.statistics?.likeCount)
+		const oldTitle = getTitle(video)
+		const { views, likes } = getStats(video)
 
 		console.info(`Found the video with title "${oldTitle}".`)
 
 		const newTitle = getNewTitle(views, likes)
-
 		if (oldTitle === newTitle) {
 			console.info("Video title already up to date.")
 			return
 		}
 
 		console.info(`Updating video title to "${newTitle}" ...`)
-
-		// https://developers.google.com/youtube/v3/docs/videos/update
-		await youtube.videos.update({
-			part: ["snippet"],
-			requestBody: {
-				id: VIDEO_ID,
-				snippet: {
-					title: newTitle,
-					categoryId: video.snippet?.categoryId,
-					description: video.snippet?.description,
-					defaultAudioLanguage: video.snippet?.defaultAudioLanguage,
-					defaultLanguage: video.snippet?.defaultLanguage,
-				},
-			},
-		})
+		await updateTitle(video, newTitle)
 
 		console.info("Video title updated successfully.")
 	} catch (error) {
@@ -64,4 +36,55 @@ async function updateVideoTitle() {
 	}
 }
 
-updateVideoTitle()
+async function fetchVideoDetails(videoId: string): Promise<Video> {
+	// https://developers.google.com/youtube/v3/docs/videos/list
+	const response = await youtube.videos.list({
+		part: ["snippet", "statistics"],
+		id: [videoId],
+	})
+
+	if (!response.data.items?.length) {
+		throw new Error("Video not found.")
+	}
+
+	const video = response.data.items[0]
+	if (!video.snippet) {
+		throw new Error("Snippet not found.")
+	}
+
+	return video
+}
+
+async function updateTitle(video: Video, newTitle: string) {
+	const { categoryId, description, defaultAudioLanguage, defaultLanguage } = video.snippet!
+
+	// https://developers.google.com/youtube/v3/docs/videos/update
+	await youtube.videos.update({
+		part: ["snippet"],
+		requestBody: {
+			id: video.id,
+			snippet: {
+				title: newTitle,
+				categoryId,
+				description,
+				defaultAudioLanguage,
+				defaultLanguage,
+			},
+		},
+	})
+}
+
+function getTitle(video: Video) {
+	return video.snippet?.title
+}
+
+function getStats(video: Video) {
+	return {
+		views: Number(video.statistics?.viewCount),
+		likes: Number(video.statistics?.likeCount),
+	}
+}
+
+function getNewTitle(views: number, likes: number) {
+	return `Dieses Video wurde ${views} mal gesehen und hat ${likes} Likes!`
+}
