@@ -7,7 +7,7 @@ This project automatically updates the title of a specified YouTube video by inc
 
 ## Development
 
-To get started, ensure you have Node.js and pnpm installed. Then, install the dependencies with:
+To get started, ensure you have Node.js and pnpm installed. Then, install the dependencies with `pnpm install`.
 
 -   `pnpm update:video` - Updates the video title once
 -   `pnpm auth` - Generates an access and refresh token for OAuth2
