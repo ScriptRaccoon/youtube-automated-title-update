@@ -33,7 +33,7 @@ Below you find detailed instructions how to apply this process to your YouTube v
 15. Choose a name for the application or keep the default name.
 16. In the "Authorized redirect URIs", add `http://localhost:3000/callback`.
 17. Download the credentials as a JSON file.
-18. In the "Audience" tab of the application, add your Google account to the "Test users".
+18. In the "Audience" tab of the application, click "Publish app". We do this so that the refresh token, that we will get in a moment, does not expire automatically after 7 days. You do not need to to submit the app to verification.
 
 ## Specify the environment variables
 
