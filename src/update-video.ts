@@ -60,19 +60,21 @@ async function updateTitle(video: YouTubeVideo) {
 		throw new Error("Default language is missing.")
 	}
 
+	const requestBody = {
+		id: video.id,
+		snippet: {
+			title: getNewTitle(defaultLanguage, video),
+			categoryId,
+			description,
+			defaultAudioLanguage,
+			defaultLanguage,
+		},
+		localizations: getLocalizations(video),
+	}
+
 	await youtube.videos.update({
 		part: ["snippet", "localizations"],
-		requestBody: {
-			id: video.id,
-			snippet: {
-				title: getNewTitle(defaultLanguage, video),
-				categoryId,
-				description,
-				defaultAudioLanguage,
-				defaultLanguage,
-			},
-			localizations: getLocalizations(video),
-		},
+		requestBody,
 	})
 }
 
