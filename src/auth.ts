@@ -33,16 +33,15 @@ app.get("/", (_, res) => {
 	)
 })
 
-app.get("/callback", (req, res) => {
+app.get("/callback", async (req, res) => {
 	const code = req.query.code as string
-	oAuth2Client.getToken(code, (err, token) => {
-		if (err) {
-			console.error("Error retrieving access token", err)
-			res.status(500).send("Error retrieving access token")
-			return
-		}
-		console.info("Token has been generated successfully.")
-		console.info(token)
-		res.status(200).json(token)
-	})
+	try {
+		const { tokens } = await oAuth2Client.getToken(code)
+		console.info("Tokens have been generated successfully.")
+		console.info(tokens)
+		res.status(200).json(tokens)
+	} catch (error) {
+		console.error("Error retrieving tokens", error)
+		res.status(500).send("Error retrieving tokens")
+	}
 })
