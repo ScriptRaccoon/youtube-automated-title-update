@@ -33,12 +33,19 @@ app.get("/", (_, res) => {
 	)
 })
 
+const warning =
+	"Refresh token is missing. You may revoke the access under " +
+	"https://myaccount.google.com/connections to retrieve it."
+
 app.get("/callback", async (req, res) => {
 	const code = req.query.code as string
 	try {
 		const { tokens } = await oAuth2Client.getToken(code)
 		console.info("Tokens have been generated successfully.")
 		console.info(tokens)
+		if (!tokens.refresh_token) {
+			console.warn(warning)
+		}
 		res.status(200).json(tokens)
 	} catch (error) {
 		console.error("Error retrieving tokens", error)
