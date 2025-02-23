@@ -23,3 +23,5 @@ export const titleTemplates: Record<string, string> = {
 	"zh-TW": "這部影片已觀看{views}次，並獲得{likes}個讚", // Chinese (Taiwan)
 	default: "This video has {views} views and {likes} likes!", // Default
 }
+
+export const numberOfLanguages = Object.keys(titleTemplates).length - 1

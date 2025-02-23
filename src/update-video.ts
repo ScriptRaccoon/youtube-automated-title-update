@@ -4,7 +4,7 @@
 
 import { VIDEO_ID } from "./env"
 import { youtube, type YouTubeVideo } from "./client"
-import { titleTemplates } from "./titles"
+import { numberOfLanguages, titleTemplates } from "./titles"
 
 updateVideoTitle()
 
@@ -20,9 +20,11 @@ async function updateVideoTitle() {
 
 		console.info("Video found.")
 
-		await updateTitle(video)
-
-		console.info("Video title updated successfully.")
+		const newTitle = await updateTitle(video)
+		if (newTitle) {
+			console.info(`New default title: ${newTitle}`)
+			console.info(`Title has been updated in ${numberOfLanguages} languages.`)
+		}
 	} catch (error) {
 		console.error("Error updating video:", error)
 	}
@@ -48,16 +50,24 @@ async function fetchVideoDetails(videoId: string): Promise<YouTubeVideo> {
 /**
  * Updates the title of a video in multiple languages.
  * See {@link https://developers.google.com/youtube/v3/docs/videos/update}
+ * Returns the new default title if the title was updated successfully.
  */
-async function updateTitle(video: YouTubeVideo) {
+async function updateTitle(video: YouTubeVideo): Promise<string | null> {
 	if (!video.snippet) {
 		throw new Error("Snippet is missing.")
 	}
 
-	const { categoryId, description, defaultAudioLanguage, defaultLanguage } = video.snippet
+	const { title, categoryId, description, defaultAudioLanguage, defaultLanguage } = video.snippet
 
 	if (!defaultLanguage) {
 		throw new Error("Default language is missing.")
+	}
+
+	const newDefaultTitle = getNewTitle(defaultLanguage, video)
+
+	if (title === newDefaultTitle) {
+		console.info("Title is already up to date.")
+		return null
 	}
 
 	const requestBody = {
@@ -76,6 +86,8 @@ async function updateTitle(video: YouTubeVideo) {
 		part: ["snippet", "localizations"],
 		requestBody,
 	})
+
+	return newDefaultTitle
 }
 
 function getNewTitle(locale: string, video: YouTubeVideo) {
