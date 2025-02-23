@@ -1,3 +1,7 @@
+/**
+ * This file loads environment variables from the .env file.
+ */
+
 import { config } from "dotenv"
 
 config()
@@ -11,7 +15,7 @@ const VIDEO_ID = process.env.VIDEO_ID ?? ""
 const is_valid = CLIENT_ID && CLIENT_SECRET && REDIRECT_URI && REFRESH_TOKEN && VIDEO_ID
 
 if (!is_valid) {
-	console.error("Missing environment variables.")
+	console.error("Environment variables are incomplete.")
 	process.exit(1)
 }
 

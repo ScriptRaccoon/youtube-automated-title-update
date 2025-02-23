@@ -1,6 +1,8 @@
 /**
- * Use this script to generate the access and refresh token for the YouTube API.
+ * This script generates the access and refresh token for the YouTube API.
+ * See {@link https://www.npmjs.com/package/googleapis}
  */
+
 import express from "express"
 import { google } from "googleapis"
 import { CLIENT_ID, CLIENT_SECRET, REDIRECT_URI } from "./env"
