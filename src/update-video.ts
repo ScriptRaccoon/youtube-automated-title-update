@@ -4,6 +4,7 @@
 
 import { VIDEO_ID } from "./env"
 import { youtube, type YouTubeVideo } from "./client"
+import { titleTemplates } from "./titles"
 
 updateVideoTitle()
 
@@ -17,19 +18,9 @@ async function updateVideoTitle() {
 		console.info(`Searching for video with ID ${VIDEO_ID} ...`)
 		const video = await fetchVideoDetails(VIDEO_ID)
 
-		const oldTitle = getTitle(video)
-		const { views, likes } = getStats(video)
+		console.info("Video found.")
 
-		console.info(`Found the video with title "${oldTitle}".`)
-
-		const newTitle = getNewTitle(views, likes)
-		if (oldTitle === newTitle) {
-			console.info("Video title already up to date.")
-			return
-		}
-
-		console.info(`Updating video title to "${newTitle}" ...`)
-		await updateTitle(video, newTitle)
+		await updateTitle(video)
 
 		console.info("Video title updated successfully.")
 	} catch (error) {
@@ -38,12 +29,12 @@ async function updateVideoTitle() {
 }
 
 /**
- * Fetches basic information and statistics about a video.
+ * Fetches all the required information about a video.
  * See {@link https://developers.google.com/youtube/v3/docs/videos/list}
  */
 async function fetchVideoDetails(videoId: string): Promise<YouTubeVideo> {
 	const response = await youtube.videos.list({
-		part: ["snippet", "statistics"],
+		part: ["snippet", "statistics", "localizations"],
 		id: [videoId],
 	})
 
@@ -55,52 +46,55 @@ async function fetchVideoDetails(videoId: string): Promise<YouTubeVideo> {
 }
 
 /**
- * Updates the title of a video.
+ * Updates the title of a video in multiple languages.
  * See {@link https://developers.google.com/youtube/v3/docs/videos/update}
  */
-async function updateTitle(video: YouTubeVideo, newTitle: string) {
+async function updateTitle(video: YouTubeVideo) {
 	if (!video.snippet) {
 		throw new Error("Snippet is missing.")
 	}
 
 	const { categoryId, description, defaultAudioLanguage, defaultLanguage } = video.snippet
 
+	if (!defaultLanguage) {
+		throw new Error("Default language is missing.")
+	}
+
 	await youtube.videos.update({
-		part: ["snippet"],
+		part: ["snippet", "localizations"],
 		requestBody: {
 			id: video.id,
 			snippet: {
-				title: newTitle,
+				title: getNewTitle(defaultLanguage, video),
 				categoryId,
 				description,
 				defaultAudioLanguage,
 				defaultLanguage,
 			},
+			localizations: getLocalizations(video),
 		},
 	})
 }
 
-/**
- * Returns the title of a YouTube video.
- */
-function getTitle(video: YouTubeVideo) {
-	return video.snippet?.title
+function getNewTitle(locale: string, video: YouTubeVideo) {
+	const views = video.statistics?.viewCount ?? 0
+	const likes = video.statistics?.likeCount ?? 0
+	const template = titleTemplates[locale] || titleTemplates["default"]
+	return template.replace("{views}", views.toString()).replace("{likes}", likes.toString())
 }
 
-/**
- * Returns the view count and like count of a YouTube video.
- */
-function getStats(video: YouTubeVideo) {
-	return {
-		views: Number(video.statistics?.viewCount),
-		likes: Number(video.statistics?.likeCount),
+function getDescription(locale: string, video: YouTubeVideo) {
+	return video.localizations?.[locale]?.description ?? ""
+}
+
+function getLocalizations(video: YouTubeVideo) {
+	const localizations = {}
+	for (const locale of Object.keys(titleTemplates)) {
+		if (locale === "default") continue
+		localizations[locale] = {
+			title: getNewTitle(locale, video),
+			description: getDescription(locale, video),
+		}
 	}
-}
-
-/**
- * Generates the new title for the YouTube video.
- * Adjust this function as you like. In my case, it's German.
- */
-function getNewTitle(views: number, likes: number) {
-	return `Dieses Video wurde ${views} mal gesehen und hat ${likes} Likes!`
+	return localizations
 }

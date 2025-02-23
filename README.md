@@ -4,6 +4,7 @@ This project automatically updates the title of a specified YouTube video by inc
 
 -   Running a script every 10 minutes via a GitHub Action
 -   Accessing the YouTube Data API to edit the video title
+-   Translating the title in several languages
 
 Below you find detailed instructions how to apply this process to your YouTube video.
 
@@ -12,7 +13,6 @@ Below you find detailed instructions how to apply this process to your YouTube v
 1. Clone this repository.
 2. Make sure that [Node.js](https://nodejs.org/en/download) and [pnpm](https://pnpm.io/) are installed.
 3. Install the dependencies with `pnpm install`.
-4. Change the implementation of the function `getNewTitle` in `update-video.ts` to your needs.
 
 ## Setup on Google Cloud
 
