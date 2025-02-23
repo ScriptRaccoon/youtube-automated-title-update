@@ -1,17 +1,15 @@
 /**
- * This file updates the tile of a specified YouTube video.
+ * This file updates the title of a specified YouTube video.
  */
 
 import { VIDEO_ID } from "./env"
 import { youtube, type YouTubeVideo } from "./client"
-import { numberOfLanguages, titleTemplates } from "./titles"
+import { defaultTemplate, supportedLocales, titleTemplates } from "./titles"
 
 updateVideoTitle()
 
 /**
- * This function updates the title of a YouTube video based on its view and like count.
- * It fetches the video details, calculates the new title, and updates the video.
- * It uses the YouTube API client created in the client.ts file.
+ * Updates the title of a YouTube video based on its view and like count.
  */
 async function updateVideoTitle() {
 	try {
@@ -22,8 +20,8 @@ async function updateVideoTitle() {
 
 		const newTitle = await updateTitle(video)
 		if (newTitle) {
-			console.info(`New default title: ${newTitle}`)
-			console.info(`Title has been updated in ${numberOfLanguages} languages.`)
+			console.info(`New title: ${newTitle}`)
+			console.info(`Title has been updated in ${supportedLocales.length} languages.`)
 		}
 	} catch (error) {
 		console.error("Error updating video:", error)
@@ -48,9 +46,9 @@ async function fetchVideoDetails(videoId: string): Promise<YouTubeVideo> {
 }
 
 /**
- * Updates the title of a video in multiple languages.
+ * Updates the title of a video. Includes translations in multiple languages.
  * See {@link https://developers.google.com/youtube/v3/docs/videos/update}
- * Returns the new default title if the title was updated successfully.
+ * Returns the new default title if the title has been updated successfully.
  */
 async function updateTitle(video: YouTubeVideo): Promise<string | null> {
 	if (!video.snippet) {
@@ -63,9 +61,9 @@ async function updateTitle(video: YouTubeVideo): Promise<string | null> {
 		throw new Error("Default language is missing.")
 	}
 
-	const newDefaultTitle = getNewTitle(defaultLanguage, video)
+	const newTitle = getNewTitle(defaultLanguage, video)
 
-	if (title === newDefaultTitle) {
+	if (title === newTitle) {
 		console.info("Title is already up to date.")
 		return null
 	}
@@ -87,24 +85,34 @@ async function updateTitle(video: YouTubeVideo): Promise<string | null> {
 		requestBody,
 	})
 
-	return newDefaultTitle
+	return newTitle
 }
 
-function getNewTitle(locale: string, video: YouTubeVideo) {
+/**
+ * Returns the new title of a video based on its view and like count
+ * in a specified locale.
+ */
+function getNewTitle(locale: string, video: YouTubeVideo): string {
 	const views = video.statistics?.viewCount ?? 0
 	const likes = video.statistics?.likeCount ?? 0
-	const template = titleTemplates[locale] || titleTemplates["default"]
+	const template = titleTemplates[locale] ?? defaultTemplate
 	return template.replace("{views}", views.toString()).replace("{likes}", likes.toString())
 }
 
-function getDescription(locale: string, video: YouTubeVideo) {
+/**
+ * Returns the description of a video in a specified locale.
+ */
+function getDescription(locale: string, video: YouTubeVideo): string {
 	return video.localizations?.[locale]?.description ?? ""
 }
 
+/**
+ * Returns the localizations for a video in multiple languages.
+ */
 function getLocalizations(video: YouTubeVideo) {
-	const localizations = {}
-	for (const locale of Object.keys(titleTemplates)) {
-		if (locale === "default") continue
+	const localizations: Record<string, { title: string; description: string }> = {}
+	for (const locale of supportedLocales) {
+		if (locale === video.snippet?.defaultLanguage) continue
 		localizations[locale] = {
 			title: getNewTitle(locale, video),
 			description: getDescription(locale, video),

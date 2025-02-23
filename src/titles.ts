@@ -1,4 +1,4 @@
-export const titleTemplates: Record<string, string> = {
+export const titleTemplates: Partial<Record<string, string>> = {
 	"ar-SA": "هذا الفيديو لديه {views} مشاهدة و {likes} إعجاب!", // Arabic
 	"bn-BD": "এই ভিডিওটি {views} বার দেখা হয়েছে এবং {likes} লাইক পেয়েছে!", // Bengali
 	"de-DE": "Dieses Video wurde {views} mal gesehen und hat {likes} Likes!", // German
@@ -21,7 +21,8 @@ export const titleTemplates: Record<string, string> = {
 	"vi-VN": "Video này có {views} lượt xem và {likes} lượt thích!", // Vietnamese
 	"zh-CN": "这个视频已观看{views}次，获得了{likes}个赞！", // Chinese (China)
 	"zh-TW": "這部影片已觀看{views}次，並獲得{likes}個讚", // Chinese (Taiwan)
-	default: "This video has {views} views and {likes} likes!", // Default
-}
+} satisfies Record<`${Lowercase<string>}-${Uppercase<string>}`, string>
 
-export const numberOfLanguages = Object.keys(titleTemplates).length - 1
+export const defaultTemplate = "This video has {views} views and {likes} likes!" // Default
+
+export const supportedLocales = Object.keys(titleTemplates)
