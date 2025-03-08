@@ -24,38 +24,38 @@ const authUrl = oAuth2Client.generateAuthUrl({
 	scope: SCOPES,
 })
 
+const homeBody = (url: string) =>
+	`<body style="max-width: 30rem">
+		<h1>Authentication with OAuth2</h1>
+		<p>Use the following link to retrieve the access and refresh token.</p>
+		<a href="${url}">${url}</a>
+	</body>`
+
 app.get("/", (_, res) => {
-	res.send(
-		`<body style="max-width:30rem">` +
-			`<h1>Authentication with OAuth2</h1>` +
-			`<p>Use the following link to retrieve the access and refresh token.</p>` +
-			`<a href="${authUrl}">${authUrl}</a>` +
-			`</body>`
-	)
+	res.send(homeBody(authUrl))
 })
+
+const connectionUrl = "https://myaccount.google.com/connections"
+
+const callbackBody = (access_token: string | null, refresh_token: string | null) =>
+	`<body style="max-width:30rem">
+		<h1>Tokens have been generated successfully.</h1>
+		<h2>Access token:</h2>
+		<code style="word-break: break-all;">${access_token}</code>
+		<h2>Refresh token:</h2>
+		<code style="word-break: break-all;">${refresh_token}</code>` +
+	(refresh_token
+		? ""
+		: `<p>Refresh token has not been generated again.
+		  You may revoke access of the existing one under:
+		  <a href="${connectionUrl}">${connectionUrl}</a></p>`) +
+	`</body>`
 
 app.get("/callback", async (req, res) => {
 	const code = req.query.code as string
 	try {
 		const { tokens } = await oAuth2Client.getToken(code)
-
-		const showWarning = !tokens.refresh_token
-		const connectionUrl = "https://myaccount.google.com/connections"
-
-		const warning =
-			"Refresh token has not been generated again. You may revoke access of the existing one under: " +
-			`<a href="${connectionUrl}">${connectionUrl}</a>`
-
-		res.send(
-			`<body style="max-width:30rem">` +
-				`<h1>Tokens have been generated successfully.</h1>` +
-				`<h2>Access token:</h2>` +
-				`<code style="word-break: break-all;">${tokens.access_token}</code>` +
-				`<h2>Refresh token:</h2>` +
-				`<code style="word-break: break-all;">${tokens.refresh_token}</code>` +
-				(showWarning ? `<p>${warning}</p>` : "") +
-				`</body>`
-		)
+		res.send(callbackBody(tokens.access_token ?? null, tokens.refresh_token ?? null))
 	} catch (error) {
 		res.status(500).send("Error retrieving tokens")
 	}
