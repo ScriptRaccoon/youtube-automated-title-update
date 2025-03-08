@@ -1,3 +1,5 @@
+export const defaultTemplate = "This video has {views} views and {likes} likes!" // Default
+
 export const titleTemplates: Partial<Record<string, string>> = {
 	"ar-SA": "هذا الفيديو لديه {views} مشاهدة و {likes} إعجاب!", // Arabic
 	"bn-BD": "এই ভিডিওটি {views} বার দেখা হয়েছে এবং {likes} লাইক পেয়েছে!", // Bengali
@@ -22,7 +24,5 @@ export const titleTemplates: Partial<Record<string, string>> = {
 	"zh-CN": "这个视频已观看{views}次，获得了{likes}个赞！", // Chinese (China)
 	"zh-TW": "這部影片已觀看{views}次，並獲得{likes}個讚", // Chinese (Taiwan)
 } satisfies Record<`${Lowercase<string>}-${Uppercase<string>}`, string>
-
-export const defaultTemplate = "This video has {views} views and {likes} likes!" // Default
 
 export const supportedLocales = Object.keys(titleTemplates)

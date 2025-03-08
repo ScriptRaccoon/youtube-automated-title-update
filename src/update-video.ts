@@ -11,18 +11,14 @@ updateVideoTitle()
 /**
  * Updates the title of a YouTube video based on its view and like count.
  */
-async function updateVideoTitle() {
+async function updateVideoTitle(): Promise<void> {
 	try {
 		console.info(`Searching for video with ID ${VIDEO_ID} ...`)
 		const video = await fetchVideoDetails(VIDEO_ID)
 
 		console.info("Video found.")
 
-		const newTitle = await updateTitle(video)
-		if (newTitle) {
-			console.info(`New title: ${newTitle}`)
-			console.info(`Title has been updated in ${supportedLocales.length} languages.`)
-		}
+		await updateTitle(video)
 	} catch (error) {
 		console.error("Error updating video:", error)
 	}
@@ -50,12 +46,14 @@ async function fetchVideoDetails(videoId: string): Promise<YouTubeVideo> {
  * See {@link https://developers.google.com/youtube/v3/docs/videos/update}
  * Returns the new default title if the title has been updated successfully.
  */
-async function updateTitle(video: YouTubeVideo): Promise<string | null> {
+async function updateTitle(video: YouTubeVideo): Promise<void> {
 	if (!video.snippet) {
 		throw new Error("Snippet is missing.")
 	}
 
 	const { title, categoryId, description, defaultAudioLanguage, defaultLanguage } = video.snippet
+
+	console.info(`Old title: ${title}`)
 
 	if (!defaultLanguage) {
 		throw new Error("Default language is missing.")
@@ -65,8 +63,10 @@ async function updateTitle(video: YouTubeVideo): Promise<string | null> {
 
 	if (title === newTitle) {
 		console.info("Title is already up to date.")
-		return null
+		return
 	}
+
+	console.info(`New title: ${newTitle}`)
 
 	const requestBody = {
 		id: video.id,
@@ -85,7 +85,7 @@ async function updateTitle(video: YouTubeVideo): Promise<string | null> {
 		requestBody,
 	})
 
-	return newTitle
+	console.info(`Title has been updated in ${supportedLocales.length} languages.`)
 }
 
 /**
@@ -93,10 +93,10 @@ async function updateTitle(video: YouTubeVideo): Promise<string | null> {
  * in a specified locale.
  */
 function getNewTitle(locale: string, video: YouTubeVideo): string {
-	const views = video.statistics?.viewCount ?? 0
-	const likes = video.statistics?.likeCount ?? 0
-	const template = titleTemplates[locale] ?? defaultTemplate
-	return template.replace("{views}", views.toString()).replace("{likes}", likes.toString())
+	const views = String(video.statistics?.viewCount ?? "0")
+	const likes = String(video.statistics?.likeCount ?? "0")
+	const titleTemplate = titleTemplates[locale] ?? defaultTemplate
+	return titleTemplate.replace("{views}", views).replace("{likes}", likes)
 }
 
 /**

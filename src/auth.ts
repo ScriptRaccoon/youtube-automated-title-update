@@ -1,6 +1,7 @@
 /**
  * This script generates the access and refresh token for the YouTube API.
  * See {@link https://www.npmjs.com/package/googleapis}
+ * The refresh token needs to be added as an environment variable.
  */
 
 import express from "express"
@@ -11,19 +12,17 @@ const app = express()
 const PORT = 3000
 
 app.listen(PORT, () => {
-	console.info(`Server is running on http://localhost:${PORT}`)
+	console.info(`Open http://localhost:${PORT} to authenticate.`)
 })
 
-const SCOPES = ["https://www.googleapis.com/auth/youtube"]
-
 const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
+
+const SCOPES = ["https://www.googleapis.com/auth/youtube"]
 
 const authUrl = oAuth2Client.generateAuthUrl({
 	access_type: "offline",
 	scope: SCOPES,
 })
-
-app.use(express.json())
 
 app.get("/", (_, res) => {
 	res.send(
