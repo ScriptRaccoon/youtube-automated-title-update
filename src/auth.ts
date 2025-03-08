@@ -26,30 +26,37 @@ const authUrl = oAuth2Client.generateAuthUrl({
 
 app.get("/", (_, res) => {
 	res.send(
-		`<p style="font-size:1.25rem; font-family: system-ui, sans-serif;">
-			Use the following link to retrieve the access and refresh token:
-			<br>
-			<a style="color: blue; font-weight: bold" href="${authUrl}">${authUrl}</a>
-		</p>`
+		`<body style="max-width:30rem">` +
+			`<h1>Authentication with OAuth2</h1>` +
+			`<p>Use the following link to retrieve the access and refresh token.</p>` +
+			`<a href="${authUrl}">${authUrl}</a>` +
+			`</body>`
 	)
 })
-
-const warning =
-	"Refresh token is missing. You may revoke the access under " +
-	"https://myaccount.google.com/connections to retrieve it."
 
 app.get("/callback", async (req, res) => {
 	const code = req.query.code as string
 	try {
 		const { tokens } = await oAuth2Client.getToken(code)
-		console.info("Tokens have been generated successfully.")
-		console.info(tokens)
-		if (!tokens.refresh_token) {
-			console.warn(warning)
-		}
-		res.status(200).json(tokens)
+
+		const showWarning = !tokens.refresh_token
+		const connectionUrl = "https://myaccount.google.com/connections"
+
+		const warning =
+			"Refresh token has not been generated again. You may revoke access of the existing one under: " +
+			`<a href="${connectionUrl}">${connectionUrl}</a>`
+
+		res.send(
+			`<body style="max-width:30rem">` +
+				`<h1>Tokens have been generated successfully.</h1>` +
+				`<h2>Access token:</h2>` +
+				`<code style="word-break: break-all;">${tokens.access_token}</code>` +
+				`<h2>Refresh token:</h2>` +
+				`<code style="word-break: break-all;">${tokens.refresh_token}</code>` +
+				(showWarning ? `<p>${warning}</p>` : "") +
+				`</body>`
+		)
 	} catch (error) {
-		console.error("Error retrieving tokens", error)
 		res.status(500).send("Error retrieving tokens")
 	}
 })
