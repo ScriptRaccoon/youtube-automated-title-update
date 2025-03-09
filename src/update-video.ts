@@ -2,8 +2,8 @@
  * This file updates the title of a specified YouTube video.
  */
 
-import { VIDEO_ID } from "./env"
 import { youtube, type YouTubeVideo } from "./client"
+import { VARS } from "./env"
 import { defaultTemplate, supportedLocales, titleTemplates } from "./titles"
 
 updateVideoTitle()
@@ -13,8 +13,8 @@ updateVideoTitle()
  */
 async function updateVideoTitle(): Promise<void> {
 	try {
-		console.info(`Searching for video with ID ${VIDEO_ID} ...`)
-		const video = await fetchVideoDetails(VIDEO_ID)
+		console.info(`Searching for video with ID ${VARS.VIDEO_ID} ...`)
+		const video = await fetchVideoDetails(VARS.VIDEO_ID)
 
 		console.info("Video found.")
 

@@ -6,7 +6,7 @@
 
 import express from "express"
 import { google } from "googleapis"
-import { CLIENT_ID, CLIENT_SECRET, REDIRECT_URI } from "./env"
+import { VARS } from "./env"
 
 const app = express()
 const PORT = 3000
@@ -15,7 +15,7 @@ app.listen(PORT, () => {
 	console.info(`Open http://localhost:${PORT} to authenticate.`)
 })
 
-const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
+const oAuth2Client = new google.auth.OAuth2(VARS.CLIENT_ID, VARS.CLIENT_SECRET, VARS.REDIRECT_URI)
 
 const SCOPES = ["https://www.googleapis.com/auth/youtube"]
 
