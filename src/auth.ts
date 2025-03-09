@@ -4,9 +4,9 @@
  * The refresh token needs to be added as an environment variable.
  */
 
-import express from "express"
-import { google } from "googleapis"
-import { VARS } from "./env"
+import express from 'express'
+import { google } from 'googleapis'
+import { VARS } from './env'
 
 const app = express()
 const PORT = 3000
@@ -17,10 +17,10 @@ app.listen(PORT, () => {
 
 const oAuth2Client = new google.auth.OAuth2(VARS.CLIENT_ID, VARS.CLIENT_SECRET, VARS.REDIRECT_URI)
 
-const SCOPES = ["https://www.googleapis.com/auth/youtube"]
+const SCOPES = ['https://www.googleapis.com/auth/youtube']
 
 const authUrl = oAuth2Client.generateAuthUrl({
-	access_type: "offline",
+	access_type: 'offline',
 	scope: SCOPES,
 })
 
@@ -31,11 +31,11 @@ const homeBody = (url: string) =>
 		<a href="${url}">${url}</a>
 	</body>`
 
-app.get("/", (_, res) => {
+app.get('/', (_, res) => {
 	res.send(homeBody(authUrl))
 })
 
-const connectionUrl = "https://myaccount.google.com/connections"
+const connectionUrl = 'https://myaccount.google.com/connections'
 
 const callbackBody = (access_token: string | null, refresh_token: string | null) =>
 	`<body style="max-width:30rem">
@@ -45,18 +45,18 @@ const callbackBody = (access_token: string | null, refresh_token: string | null)
 		<h2>Refresh token:</h2>
 		<code style="word-break: break-all;">${refresh_token}</code>` +
 	(refresh_token
-		? ""
+		? ''
 		: `<p>Refresh token has not been generated again.
 		  You may revoke access of the existing one under:
 		  <a href="${connectionUrl}">${connectionUrl}</a></p>`) +
 	`</body>`
 
-app.get("/callback", async (req, res) => {
+app.get('/callback', async (req, res) => {
 	const code = req.query.code as string
 	try {
 		const { tokens } = await oAuth2Client.getToken(code)
 		res.send(callbackBody(tokens.access_token ?? null, tokens.refresh_token ?? null))
 	} catch (error) {
-		res.status(500).send("Error retrieving tokens")
+		res.status(500).send('Error retrieving tokens')
 	}
 })

@@ -3,10 +3,16 @@
  * It also validates the presence of all required variables.
  */
 
-import { config } from "dotenv"
+import { config } from 'dotenv'
 config()
 
-const { CLIENT_ID = "", CLIENT_SECRET = "", REDIRECT_URI = "", REFRESH_TOKEN = "", VIDEO_ID = "" } = process.env
+const {
+	CLIENT_ID = '',
+	CLIENT_SECRET = '',
+	REDIRECT_URI = '',
+	REFRESH_TOKEN = '',
+	VIDEO_ID = '',
+} = process.env
 
 export const VARS = {
 	CLIENT_ID,
